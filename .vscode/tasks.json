@@ -1,0 +1,45 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "Build C++ project",
+            "command": "/usr/bin/g++",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${workspaceFolder}/Pangolin.cpp",
+                "${workspaceFolder}/Utility.cpp",
+                "${workspaceFolder}/main.cpp",
+                "-o",
+                "${workspaceFolder}/build/pangolution"
+                // Uncomment the following lines if using kafka
+                // "-lrdkafka",
+                // "-lrdkafka++"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run Python Script",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/x1plots.py"
+            ],
+            "dependsOn": "Build C++ project",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        }
+    ]
+}
