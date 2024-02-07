@@ -25,20 +25,24 @@ int main() {
         environmentalResources[region] = 5000.0f; // Starting resource value for each region
     }
 
+    // Init the output CSV file
     std::ofstream outFile("pangolin_data.csv");
     //outFile << "Region,Generation,Exists,PopulationSize,AverageFitness,Resources\n";
     outFile << "Region,Generation,Exists,PopulationSize,AverageFitness\n";
 
+    // Begin the master loop
     for (int generation = 0; generation < numberOfGenerations; ++generation) {
         std::map<Pangolin::Region, std::vector<Pangolin>> newRegionalPopulations;
 
+        // Make region specific loop
         for (auto& [region, population] : regionalPopulations) {
             std::vector<Pangolin> newGeneration;
 
-            // Apply mortality
+            // Apply mortality by randomly eliminating a fraction of Pangolins
             std::shuffle(population.begin(), population.end(), gen);
             population.erase(population.begin(), population.begin() + static_cast<int>(population.size() * mortalityRate));
 
+            // Poll for the region populations average fitness
             float totalFitness = 0.0f;
             for (const Pangolin& p : population) {
                 totalFitness += p.getFitness();
@@ -49,6 +53,7 @@ int main() {
                 continue; // Skip reproduction if population is too small (will get hung otherwise)
             }
 
+            // Begin generational reproduction
             for (Pangolin& parent1 : population) {
                 std::uniform_int_distribution<> partnerDist(0, population.size() - 1);
                 int partnerIndex;
@@ -59,8 +64,9 @@ int main() {
                 Pangolin& partner = population[partnerIndex];
                 std::vector<Pangolin> offspring = parent1.reproduce(partner);
 
+                // **INSPECT**
                 for (Pangolin& child : offspring) {
-                    // Are there enough resources
+                    // Are there enough resources?
                     if (environmentalResources[region] > (resourceConsumptionPerOffspring) * population.size()) {
                         environmentalResources[region] -= resourceConsumptionPerOffspring;
                         if (child.getFitness() >= avgFitness) {
@@ -70,7 +76,7 @@ int main() {
                 }
             }
 
-            newRegionalPopulations[region] = newGeneration;
+            newRegionalPopulations[region] = newGeneration; // Overwrite old generation
         }
 
         regionalPopulations = newRegionalPopulations;
