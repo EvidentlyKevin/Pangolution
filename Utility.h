@@ -11,3 +11,5 @@ float calculatePopulationModifier(int populationSize, int carryingCapacity, int 
 int calculateCarryingCapacity(float resource);
 
 // int resourceRenewalRate(int);
+
+// https://electronicscoach.com/masons-gain-formula.html
