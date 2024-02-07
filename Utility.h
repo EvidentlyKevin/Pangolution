@@ -5,6 +5,7 @@
 
 float calculateAverageFitnessSample(const std::vector<Pangolin>& population, size_t sampleSize);
 
+// Not used (can delete)
 float calculatePopulationModifier(int populationSize, int carryingCapacity, int generation);
 
 int calculateCarryingCapacity(float resource);
