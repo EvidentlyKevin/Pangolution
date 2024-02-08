@@ -10,8 +10,8 @@ int main() {
     const int initialPopulationSize = 40;
     const int numberOfGenerations = 16;
     const float mortalityRate = 0.1f;
-    const float resourceRenewalAmount = 7000.0f;
-    const float resourceRenewalRate = 3.0f;
+    const float resourceRenewalAmount = 100.0f;
+    const float resourceRenewalRate = 2.0f;
     const float resourceConsumptionPerOffspring = 1.0f;
     std::map<Pangolin::Region, std::vector<Pangolin>> regionalPopulations;
     std::map<Pangolin::Region, float> environmentalResources;
@@ -22,7 +22,7 @@ int main() {
     for (int i = 0; i < initialPopulationSize; ++i) {
         Pangolin::Region region = static_cast<Pangolin::Region>(i % Pangolin::NUM_REGIONS);
         regionalPopulations[region].push_back(Pangolin(region));
-        environmentalResources[region] = 5000.0f; // Starting resource value for each region
+        environmentalResources[region] = 500.0f; // Starting resource value for each region
     }
 
     // Init the output CSV file
@@ -93,7 +93,7 @@ int main() {
             } else {
                 std::cout << "Region " << static_cast<int>(region) + 1 << " - Generation " << generation + 1 << ": Population Size = " << population.size() << std::endl;
                 float avgFitness = calculateAverageFitnessSample(population, 10);
-                std::cout << "Region " << static_cast<int>(region) + 1 << " - Generation " << generation + 1 << ": Average Fitness of Sample = " << avgFitness << environmentalResources[region] << std::endl;
+                std::cout << "Region " << static_cast<int>(region) + 1 << " - Generation " << generation + 1 << ": Average Fitness of Sample = " << avgFitness << /*environmentalResources[region] <<*/std::endl;
                 outFile << "Exists," << population.size() << "," << avgFitness << "\n";
             }
         }
