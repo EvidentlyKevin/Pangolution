@@ -16,7 +16,7 @@ public:
     static const int GeneCount = NUM_GENES;
 
     Pangolin(Region region);
-    std::vector<Pangolin> reproduce(const Pangolin& partner) const;
+    std::vector<Pangolin> reproduce(const std::vector<Pangolin>& potentialPartners) const;
     float getFitness() const;
 
     // Incomplete

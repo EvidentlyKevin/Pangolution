@@ -55,14 +55,15 @@ int main() {
 
             // Begin generational reproduction
             for (Pangolin& parent1 : population) {
-                std::uniform_int_distribution<> partnerDist(0, population.size() - 1);
-                int partnerIndex;
-                do {
-                    partnerIndex = partnerDist(gen);
-                } while (partnerIndex == &parent1 - &population[0]);
+                // Create a list of potential partners (excluding the current parent)
+                std::vector<Pangolin> potentialPartners;
+                for (Pangolin& other : population) {
+                    if (&other != &parent1) {
+                        potentialPartners.push_back(other);
+                    }
+                }
 
-                Pangolin& partner = population[partnerIndex];
-                std::vector<Pangolin> offspring = parent1.reproduce(partner);
+                std::vector<Pangolin> offspring = parent1.reproduce(potentialPartners);
 
                 // **INSPECT**
                 for (Pangolin& child : offspring) {
