@@ -10,8 +10,8 @@ int main() {
     const int initialPopulationSize = 40;
     const int numberOfGenerations = 16;
     const float mortalityRate = 0.1f;
-    const float resourceRenewalAmount = 100.0f;
-    const float resourceRenewalRate = 2.0f;
+    // const float resourceRenewalAmount = 100.0f; not used
+    const float resourceRenewalRate = 1.2f;
     const float resourceConsumptionPerOffspring = 1.0f;
     std::map<Pangolin::Region, std::vector<Pangolin>> regionalPopulations;
     std::map<Pangolin::Region, float> environmentalResources;
@@ -22,7 +22,7 @@ int main() {
     for (int i = 0; i < initialPopulationSize; ++i) {
         Pangolin::Region region = static_cast<Pangolin::Region>(i % Pangolin::NUM_REGIONS);
         regionalPopulations[region].push_back(Pangolin(region));
-        environmentalResources[region] = 500.0f; // Starting resource value for each region
+        environmentalResources[region] = 1000.0f; // Starting resource value for each region
     }
 
     // Init the output CSV file
@@ -65,14 +65,18 @@ int main() {
 
                 std::vector<Pangolin> offspring = parent1.reproduce(potentialPartners);
 
-                // **INSPECT**
+                // Sort offspring by fitness in descending order
+                std::sort(offspring.begin(), offspring.end(), [](const Pangolin& a, const Pangolin& b) {
+                    return a.getFitness() > b.getFitness();
+                });
+
+                // Allow the fittest individuals to consume resources until they are depleted
                 for (Pangolin& child : offspring) {
-                    // Are there enough resources?
-                    if (environmentalResources[region] > (resourceConsumptionPerOffspring) * population.size()) {
+                    if (environmentalResources[region] > resourceConsumptionPerOffspring) {
                         environmentalResources[region] -= resourceConsumptionPerOffspring;
-                        if (child.getFitness() >= avgFitness) {
-                            newGeneration.push_back(child);
-                        }
+                        newGeneration.push_back(child);
+                    } else {
+                        break; // Stop if resources are depleted
                     }
                 }
             }
