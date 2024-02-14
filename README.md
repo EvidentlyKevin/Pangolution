@@ -8,7 +8,6 @@ WHAT NEEDS TO BE DONE???
 Always something, among that:
 
 The pangolins are being overly punished for exceeding the carrying capacity.
-There is no "real" competition.
 Genes do not have much effect on the simulation as they should.
 The regions are not distinct.
 
