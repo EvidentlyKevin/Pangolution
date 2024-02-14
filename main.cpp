@@ -8,8 +8,8 @@
 
 int main() {
     const int initialPopulationSize = 40;
-    const int numberOfGenerations = 16;
-    const float mortalityRate = 0.1f;
+    const int numberOfGenerations = 36;
+    const float mortalityRate = 0.3f;
     // const float resourceRenewalAmount = 100.0f; not used
     const float resourceRenewalRate = 1.2f;
     const float resourceConsumptionPerOffspring = 1.0f;
@@ -22,7 +22,7 @@ int main() {
     for (int i = 0; i < initialPopulationSize; ++i) {
         Pangolin::Region region = static_cast<Pangolin::Region>(i % Pangolin::NUM_REGIONS);
         regionalPopulations[region].push_back(Pangolin(region));
-        environmentalResources[region] = 1000.0f; // Starting resource value for each region
+        environmentalResources[region] = 250.0f; // Starting resource value for each region
     }
 
     // Init the output CSV file
@@ -37,6 +37,12 @@ int main() {
         // Make region specific loop
         for (auto& [region, population] : regionalPopulations) {
             std::vector<Pangolin> newGeneration;
+            // Define the maximum amount of resources that can be consumed per generation
+            // This could be a fixed number or a percentage of the total resources
+            int maxResourceConsumptionPerGeneration = environmentalResources[region] * 0.8; // 80% of the total resources
+            // Keep track of the amount of resources consumed in this generation
+            int resourcesConsumedThisGeneration = 0;
+
 
             // Apply mortality by randomly eliminating a fraction of Pangolins
             std::shuffle(population.begin(), population.end(), gen);
@@ -72,8 +78,9 @@ int main() {
 
                 // Allow the fittest individuals to consume resources until they are depleted
                 for (Pangolin& child : offspring) {
-                    if (environmentalResources[region] > resourceConsumptionPerOffspring) {
+                    if (resourcesConsumedThisGeneration + resourceConsumptionPerOffspring <= maxResourceConsumptionPerGeneration) {
                         environmentalResources[region] -= resourceConsumptionPerOffspring;
+                        resourcesConsumedThisGeneration += resourceConsumptionPerOffspring;
                         newGeneration.push_back(child);
                     } else {
                         break; // Stop if resources are depleted
@@ -88,7 +95,7 @@ int main() {
 
         // Replenish environmental resources and record observations
         for (auto& [region, population] : regionalPopulations) {
-            environmentalResources[region] *= resourceRenewalRate; // Replenish resources
+            environmentalResources[region] = (environmentalResources[region] + 10) * resourceRenewalRate; // Replenish resources
 
             outFile << static_cast<int>(region) + 1 << "," << generation + 1 << ",";
             if (population.empty()) {
