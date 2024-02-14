@@ -11,5 +11,6 @@ The pangolins are being overly punished for exceeding the carrying capacity.
 Genes do not have much effect on the simulation as they should.
 The regions are not distinct.
 Regions may not have their own resources.
+**RESOURCES (MAYBE) SHOULD BE EXPONENTIAL**.
 
 The Pangolins are currently _______ (not alright)
