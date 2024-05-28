@@ -8,7 +8,7 @@ WHAT NEEDS TO BE DONE???
 Always something, among that:
 
 The pangolins are being overly punished for exceeding the carrying capacity.
-    - *Only kind of true now*
+    <-{*Only kind of true now*.}
 Genes do not have much effect on the simulation as they should.
 The regions are not distinct.
 Regions may not have their own resources.
