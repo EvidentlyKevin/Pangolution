@@ -4,64 +4,65 @@
 #include <fstream>
 #include <vector>
 #include <map>
-#include <random> //fix this
+#include <cmath>
+#include <random>
 
 int main() {
-    const int initialPopulationSize = 40;
-    const int numberOfGenerations = 36;
-    const float mortalityRate = 0.3f;
-    // const float resourceRenewalAmount = 100.0f; not used
-    const float resourceRenewalRate = 1.2f;
-    const float resourceConsumptionPerOffspring = 1.0f;
+    const int INITIAL_POPULATION_SIZE = 40;
+    const int NUMBER_OF_GENERATIONS = 170;
+    const float MORTALITY_RATE = 0.3f;
+    const float RESOURCE_CONSUMPTION_PER_OFFSPRING = 1.5f;
+    const float INITIAL_RESOURCES = 100.0f;
+    const float RESOURCE_REPLENISH_AMOUNT = 0;
+    const float RESOURCE_GROWTH_RATE = 1.1f; // Exponential growth rate
+    const float CARRYING_CAPACITY = 500.0f; // Carrying capacity for resources
+
     std::map<Pangolin::Region, std::vector<Pangolin>> regionalPopulations;
     std::map<Pangolin::Region, float> environmentalResources;
     std::random_device rd;
     std::mt19937 gen(rd());
 
     // Initialize populations and resources
-    for (int i = 0; i < initialPopulationSize; ++i) {
+    for (int i = 0; i < INITIAL_POPULATION_SIZE; ++i) {
         Pangolin::Region region = static_cast<Pangolin::Region>(i % Pangolin::NUM_REGIONS);
         regionalPopulations[region].push_back(Pangolin(region));
-        environmentalResources[region] = 250.0f; // Starting resource value for each region
+        environmentalResources[region] = INITIAL_RESOURCES;
     }
 
-    // Init the output CSV file
+    // Initialize the output CSV file
     std::ofstream outFile("pangolin_data.csv");
-    //outFile << "Region,Generation,Exists,PopulationSize,AverageFitness,Resources\n";
     outFile << "Region,Generation,Exists,PopulationSize,AverageFitness\n";
 
-    // Begin the master loop
-    for (int generation = 0; generation < numberOfGenerations; ++generation) {
+    // Master loop for generations
+    for (int generation = 0; generation < NUMBER_OF_GENERATIONS; ++generation) {
         std::map<Pangolin::Region, std::vector<Pangolin>> newRegionalPopulations;
 
-        // Make region specific loop
+        // Process each region
         for (auto& [region, population] : regionalPopulations) {
             std::vector<Pangolin> newGeneration;
-            // Define the maximum amount of resources that can be consumed per generation
-            // This could be a fixed number or a percentage of the total resources
-            int maxResourceConsumptionPerGeneration = environmentalResources[region] * 0.8; // 80% of the total resources
-            // Keep track of the amount of resources consumed in this generation
-            int resourcesConsumedThisGeneration = 0;
 
+            // Define max resource consumption for the generation
+            float maxResourceConsumption = environmentalResources[region] * 0.5;
+            float resourcesConsumed = 0.0f;
 
-            // Apply mortality by randomly eliminating a fraction of Pangolins
+            // Apply mortality
             std::shuffle(population.begin(), population.end(), gen);
-            population.erase(population.begin(), population.begin() + static_cast<int>(population.size() * mortalityRate));
+            population.erase(population.begin(), population.begin() + static_cast<int>(population.size() * MORTALITY_RATE));
 
-            // Poll for the region populations average fitness
+            // Calculate average fitness
             float totalFitness = 0.0f;
             for (const Pangolin& p : population) {
                 totalFitness += p.getFitness();
             }
-            float avgFitness = population.empty() ? 0 : totalFitness / population.size();
+            float avgFitness = population.empty() ? 0.0f : totalFitness / population.size();
 
             if (population.size() < 2) {
-                continue; // Skip reproduction if population is too small (will get hung otherwise)
+                continue; // Skip reproduction if population is too small
             }
 
-            // Begin generational reproduction
+            // Begin reproduction
             for (Pangolin& parent1 : population) {
-                // Create a list of potential partners (excluding the current parent)
+                // Create list of potential partners (excluding the current parent)
                 std::vector<Pangolin> potentialPartners;
                 for (Pangolin& other : population) {
                     if (&other != &parent1) {
@@ -69,18 +70,19 @@ int main() {
                     }
                 }
 
+                // Generate offspring
                 std::vector<Pangolin> offspring = parent1.reproduce(potentialPartners);
 
-                // Sort offspring by fitness in descending order
+                // Sort offspring by fitness
                 std::sort(offspring.begin(), offspring.end(), [](const Pangolin& a, const Pangolin& b) {
                     return a.getFitness() > b.getFitness();
                 });
 
-                // Allow the fittest individuals to consume resources until they are depleted
+                // Allocate resources to offspring
                 for (Pangolin& child : offspring) {
-                    if (resourcesConsumedThisGeneration + resourceConsumptionPerOffspring <= maxResourceConsumptionPerGeneration) {
-                        environmentalResources[region] -= resourceConsumptionPerOffspring;
-                        resourcesConsumedThisGeneration += resourceConsumptionPerOffspring;
+                    if (resourcesConsumed + RESOURCE_CONSUMPTION_PER_OFFSPRING <= maxResourceConsumption) {
+                        environmentalResources[region] -= RESOURCE_CONSUMPTION_PER_OFFSPRING;
+                        resourcesConsumed += RESOURCE_CONSUMPTION_PER_OFFSPRING;
                         newGeneration.push_back(child);
                     } else {
                         break; // Stop if resources are depleted
@@ -88,24 +90,26 @@ int main() {
                 }
             }
 
-            newRegionalPopulations[region] = newGeneration; // Overwrite old generation
+            newRegionalPopulations[region] = newGeneration; // Update generation
         }
 
         regionalPopulations = newRegionalPopulations;
 
-        // Replenish environmental resources and record observations
+        // Replenish resources and record observations using logistic growth model
         for (auto& [region, population] : regionalPopulations) {
-            environmentalResources[region] = (environmentalResources[region] + 10) * resourceRenewalRate; // Replenish resources
+            float currentResources = environmentalResources[region];
+            currentResources += RESOURCE_REPLENISH_AMOUNT;
+            currentResources = currentResources + RESOURCE_GROWTH_RATE * currentResources * (1 - currentResources / CARRYING_CAPACITY);
+            environmentalResources[region] = currentResources;
 
             outFile << static_cast<int>(region) + 1 << "," << generation + 1 << ",";
             if (population.empty()) {
                 std::cout << "Region " << static_cast<int>(region) + 1 << " - Generation " << generation + 1 << ": Population is Extinct." << std::endl;
                 outFile << "Extinct,0,0\n";
-                // outFile << "Extinct,0,0,0\n";
             } else {
                 std::cout << "Region " << static_cast<int>(region) + 1 << " - Generation " << generation + 1 << ": Population Size = " << population.size() << std::endl;
                 float avgFitness = calculateAverageFitnessSample(population, 10);
-                std::cout << "Region " << static_cast<int>(region) + 1 << " - Generation " << generation + 1 << ": Average Fitness of Sample = " << avgFitness << /*environmentalResources[region] <<*/std::endl;
+                std::cout << "Region " << static_cast<int>(region) + 1 << " - Generation " << generation + 1 << ": Average Fitness of Sample = " << avgFitness << std::endl;
                 outFile << "Exists," << population.size() << "," << avgFitness << "\n";
             }
         }

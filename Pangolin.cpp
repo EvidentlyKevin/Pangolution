@@ -9,7 +9,7 @@ std::vector<Pangolin> Pangolin::reproduce(const std::vector<Pangolin>& potential
     std::vector<Pangolin> offspring;
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> offspringCountDist(1, 3);
+    std::uniform_int_distribution<> offspringCountDist(1, 2);
     std::uniform_real_distribution<> dis(0, 1);
     std::bernoulli_distribution chooseParent(0.5);
     std::uniform_real_distribution<> mutationMagnitude(-1.0, 1.0); // Increased mutation range
