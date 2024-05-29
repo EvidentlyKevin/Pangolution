@@ -8,14 +8,14 @@
 #include <random>
 
 int main() {
-    const int INITIAL_POPULATION_SIZE = 40;
-    const int NUMBER_OF_GENERATIONS = 170;
-    const float MORTALITY_RATE = 0.3f;
-    const float RESOURCE_CONSUMPTION_PER_OFFSPRING = 1.5f;
-    const float INITIAL_RESOURCES = 100.0f;
+    const int INITIAL_POPULATION_SIZE = 500;
+    const int NUMBER_OF_GENERATIONS = 50;
+    const float MORTALITY_RATE = 0.25f;
+    const float RESOURCE_CONSUMPTION_PER_OFFSPRING = 1.25f;
+    const float INITIAL_RESOURCES = 1000.0f;
     const float RESOURCE_REPLENISH_AMOUNT = 0;
-    const float RESOURCE_GROWTH_RATE = 1.1f; // Exponential growth rate
-    const float CARRYING_CAPACITY = 500.0f; // Carrying capacity for resources
+    const float RESOURCE_GROWTH_RATE = 2.0f; // Exponential growth rate
+    const float CARRYING_CAPACITY = 5000.0f; // Carrying capacity for resources
 
     std::map<Pangolin::Region, std::vector<Pangolin>> regionalPopulations;
     std::map<Pangolin::Region, float> environmentalResources;
@@ -78,6 +78,7 @@ int main() {
                     return a.getFitness() > b.getFitness();
                 });
 
+
                 // Allocate resources to offspring
                 for (Pangolin& child : offspring) {
                     if (resourcesConsumed + RESOURCE_CONSUMPTION_PER_OFFSPRING <= maxResourceConsumption) {
@@ -88,6 +89,7 @@ int main() {
                         break; // Stop if resources are depleted
                     }
                 }
+
             }
 
             newRegionalPopulations[region] = newGeneration; // Update generation
