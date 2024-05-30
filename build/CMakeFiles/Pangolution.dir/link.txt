@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/Pangolution.dir/main.cpp.o CMakeFiles/Pangolution.dir/Pangolin.cpp.o CMakeFiles/Pangolution.dir/Utility.cpp.o -o Pangolution 

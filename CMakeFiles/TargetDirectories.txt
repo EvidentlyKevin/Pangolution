@@ -1,0 +1,3 @@
+/home/kevin/Pangolution/CMakeFiles/Pangolution.dir
+/home/kevin/Pangolution/CMakeFiles/edit_cache.dir
+/home/kevin/Pangolution/CMakeFiles/rebuild_cache.dir
