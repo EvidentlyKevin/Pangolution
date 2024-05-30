@@ -1,16 +1,5 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-# This workflow lets you generate SLSA provenance file for your project.
-# The generation satisfies level 3 for the provenance requirements - see https://slsa.dev/spec/v0.1/requirements
-# The project is an initiative of the OpenSSF (openssf.org) and is developed at
-# https://github.com/slsa-framework/slsa-github-generator.
-# The provenance file can be verified using https://github.com/slsa-framework/slsa-verifier.
-# For more information about SLSA and how it improves the supply-chain, visit slsa.dev.
-
 name: SLSA generic generator
+
 on:
   workflow_dispatch:
   release:
@@ -23,18 +12,22 @@ jobs:
       digests: ${{ steps.hash.outputs.digests }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       # ========================================================
       #
-      # Step 1: Build your artifacts.
+      # Step 1: Set up the C++ environment and build your artifacts.
       #
       # ========================================================
-      - name: Build artifacts
-        run: |
-          # These are some amazing artifacts.
-          echo "artifact1" > artifact1
-          echo "artifact2" > artifact2
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake make g++
+
+      - name: Configure build
+        run: cmake -S . -B build
+
+      - name: Build project
+        run: cmake --build build
 
       # ========================================================
       #
@@ -50,7 +43,7 @@ jobs:
           set -euo pipefail
 
           # List the artifacts the provenance will refer to.
-          files=$(ls artifact*)
+          files=$(find build -type f -executable)
           # Generate the subjects (base64 encoded).
           digests=$(sha256sum $files | awk '{print $1}' | tr '\n' ' ' | base64 -w0)
           echo "digests=${digests}" >> "${GITHUB_OUTPUT}"
