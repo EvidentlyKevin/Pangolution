@@ -9,7 +9,7 @@
 
 int main() {
     const int INITIAL_POPULATION_SIZE = 40;
-    const int NUMBER_OF_GENERATIONS = 170;
+    const int NUMBER_OF_GENERATIONS = 200;
     const float MORTALITY_RATE = 0.3f;
     const float RESOURCE_CONSUMPTION_PER_OFFSPRING = 1.5f;
     const float INITIAL_RESOURCES = 100.0f;
