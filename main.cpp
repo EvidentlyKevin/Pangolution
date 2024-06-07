@@ -42,7 +42,7 @@ int main() {
             std::vector<Pangolin> newGeneration;
 
             // Define max resource consumption for the generation
-            float maxResourceConsumption = environmentalResources[region] * 0.5;
+            float maxResourceConsumption = environmentalResources[region] * 0.8;
             float resourcesConsumed = 0.0f;
 
             // Apply mortality
@@ -56,11 +56,12 @@ int main() {
             }
             float avgFitness = population.empty() ? 0.0f : totalFitness / population.size();
 
+            // Skip reproduction if population is too small
             if (population.size() < 2) {
-                continue; // Skip reproduction if population is too small
+                continue;
             }
 
-            // Begin reproduction
+            // Begin reproduction (could be more sophisticated)
             for (Pangolin& parent1 : population) {
                 // Create list of potential partners (excluding the current parent)
                 std::vector<Pangolin> potentialPartners;
@@ -78,14 +79,16 @@ int main() {
                     return a.getFitness() > b.getFitness();
                 });
 
-
-                // Allocate resources to offspring
+                // Allocate resources to offspring with stochastic allocation
+                std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
                 for (Pangolin& child : offspring) {
-                    if (resourcesConsumed + RESOURCE_CONSUMPTION_PER_OFFSPRING <= maxResourceConsumption) {
+                    float probability = (maxResourceConsumption - resourcesConsumed) / maxResourceConsumption;
+                    if (resourcesConsumed + RESOURCE_CONSUMPTION_PER_OFFSPRING <= maxResourceConsumption &&
+                        distribution(gen) < probability) {
                         environmentalResources[region] -= RESOURCE_CONSUMPTION_PER_OFFSPRING;
                         resourcesConsumed += RESOURCE_CONSUMPTION_PER_OFFSPRING;
                         newGeneration.push_back(child);
-                    } else {
+                    } else if (resourcesConsumed + RESOURCE_CONSUMPTION_PER_OFFSPRING > maxResourceConsumption) {
                         break; // Stop if resources are depleted
                     }
                 }
@@ -97,12 +100,14 @@ int main() {
 
         regionalPopulations = newRegionalPopulations;
 
-        // Replenish resources and record observations using logistic growth model
+        //WHAT IS HAPPENING HERE?
+        // Replenish resources and record observations
         for (auto& [region, population] : regionalPopulations) {
             float currentResources = environmentalResources[region];
             currentResources += RESOURCE_REPLENISH_AMOUNT;
             currentResources = currentResources + RESOURCE_GROWTH_RATE * currentResources * (1 - currentResources / CARRYING_CAPACITY);
             environmentalResources[region] = currentResources;
+        //WHAT IS HAPPENING HERE?
 
             outFile << static_cast<int>(region) + 1 << "," << generation + 1 << ",";
             if (population.empty()) {
