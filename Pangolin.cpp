@@ -1,7 +1,8 @@
 #include "Pangolin.h"
+#include <algorithm>
 #include <random>
 
-Pangolin::Pangolin(Region region) : location(region) {
+Pangolin::Pangolin(Pangolin::Region region) : location(region) {
     genes.resize(GeneCount, 1.0f);
 }
 
@@ -75,4 +76,38 @@ int Pangolin::getLocation() const {
 
 void Pangolin::setLocation(Region newLocation) {
     location = newLocation;
+}
+
+void Pangolin::applyMortality(std::vector<Pangolin>& population, float mortalityRate, std::mt19937& gen) {
+    std::shuffle(population.begin(), population.end(), gen);
+    population.erase(population.begin(), population.begin() + static_cast<int>(population.size() * mortalityRate));
+}
+
+float Pangolin::calculateAverageFitness(const std::vector<Pangolin>& population) {
+    float totalFitness = 0.0f;
+    for (const Pangolin& p : population) {
+        totalFitness += p.getFitness();
+    }
+    return population.empty() ? 0.0f : totalFitness / population.size();
+}
+
+std::vector<Pangolin> Pangolin::reproduceWithStochasticAllocation(const std::vector<Pangolin>& population, std::mt19937& gen, float maxResourceConsumption, float& resourcesConsumed, float resourceConsumptionPerOffspring) const {
+    std::vector<Pangolin> newGeneration;
+    std::vector<Pangolin> offspring = reproduce(population);
+    std::sort(offspring.begin(), offspring.end(), [](const Pangolin& a, const Pangolin& b) {
+        return a.getFitness() > b.getFitness();
+    });
+
+    std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
+    for (Pangolin& child : offspring) {
+        float probability = (maxResourceConsumption - resourcesConsumed) / maxResourceConsumption;
+        if (resourcesConsumed + resourceConsumptionPerOffspring <= maxResourceConsumption &&
+            distribution(gen) < probability) {
+            resourcesConsumed += resourceConsumptionPerOffspring;
+            newGeneration.push_back(child);
+        } else if (resourcesConsumed + resourceConsumptionPerOffspring > maxResourceConsumption) {
+            break; // Stop if resources are depleted
+        }
+    }
+    return newGeneration;
 }
